@@ -1,0 +1,52 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// Singleton row holding the league's settings (buy-in, payouts, format).
+model League {
+  id Int @id @default(1)
+
+  name               String  @default("DFS DraftKings League")
+  numTeams           Int     @default(12)
+  buyIn              Decimal @default(50) @db.Decimal(10, 2)
+  playoffTeams       Int     @default(6)
+  regularSeasonWeeks Int     @default(14)
+
+  // Payouts
+  weeklyMostPfPayout Decimal @default(6) @db.Decimal(10, 2) // paid per week
+  seasonMostPfPayout Decimal @default(48) @db.Decimal(10, 2)
+  season1stPayout    Decimal @default(270) @db.Decimal(10, 2)
+  season2ndPayout    Decimal @default(120) @db.Decimal(10, 2)
+  season3rdPayout    Decimal @default(60) @db.Decimal(10, 2)
+
+  updatedAt DateTime @updatedAt
+}
+
+model Team {
+  id        String   @id @default(cuid())
+  name      String
+  owner     String?
+  createdAt DateTime @default(now())
+
+  scores WeeklyScore[]
+
+  @@index([name])
+}
+
+model WeeklyScore {
+  id        String   @id @default(cuid())
+  teamId    String
+  team      Team     @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  week      Int
+  dfsScore  Decimal  @db.Decimal(7, 2)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([teamId, week])
+  @@index([week])
+}
