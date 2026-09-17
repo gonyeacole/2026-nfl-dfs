@@ -3,8 +3,16 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
+  provider  = "postgresql"
+  // Pooled connection (e.g. Supabase's port-6543 pgbouncer URL, or Neon's
+  // pooled URL) — used by the app at runtime, where many short-lived
+  // serverless connections need to share a small pool.
+  url       = env("DATABASE_URL")
+  // Unpooled/direct connection — used only for running migrations, which
+  // don't work reliably through a transaction-mode pooler. If your
+  // provider only gives you one connection string, set both env vars to
+  // the same value.
+  directUrl = env("DIRECT_URL")
 }
 
 // Singleton row holding the league's settings (buy-in, payouts, format).

@@ -56,9 +56,16 @@ on the **Settings** page).
 
 ## Deploying (Vercel + Postgres)
 
-1. Create a Postgres database from the Vercel dashboard (Storage →
-   Postgres) and connect it to this project — this sets `DATABASE_URL`
-   (and related env vars) automatically.
+1. Create a Postgres database (Vercel Postgres/Neon, or a marketplace
+   provider like Supabase) from the project's **Storage** tab and connect
+   it to this project.
+   - If the provider sets `DATABASE_URL` only, also add a `DIRECT_URL` env
+     var with the same value.
+   - If it gives you separate pooled/direct URLs (Supabase's "Transaction
+     pooler" vs. direct connection, or Neon's pooled vs. unpooled), set
+     `DATABASE_URL` to the pooled one and `DIRECT_URL` to the direct one —
+     migrations need a direct connection, the app's runtime queries should
+     use the pooled one.
 2. Set the project's build command to run migrations before building:
    ```
    npx prisma migrate deploy && next build
